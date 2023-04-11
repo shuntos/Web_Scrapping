@@ -58,9 +58,7 @@ def extract_car_periods(html):
         date_list.append(li.text)
 
 
-
     return args_list, date_list
-
 
 
 
@@ -94,8 +92,14 @@ def download(beautiful_perioids, selenimum_periods,index ):
 
     elif pdf_info[0]=="pdf":
         selenimum_periods[i].click()
+        time.sleep(1)
+
         soup = BeautifulSoup(driver.page_source, 'html.parser')
-        print(soup.prettify())
+ 
+        image_url = soup.find("div", id="doczone").find('img').attrs['src']
+
+
+        print(image_url)
 
         time.sleep(2)
         refresh_page()
@@ -113,10 +117,7 @@ car_hovers = driver.find_elements_by_class_name("carbox") # returnls name of ite
 
 time.sleep(1)
 
-
 car_index = 4
-
-
 car_hover = car_hovers[car_index]
 
 car_hover.click()
