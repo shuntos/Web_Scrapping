@@ -22,13 +22,11 @@ pdf_links = driver.find_elements_by_xpath("//a[contains(@onclick, 'pdf')]") # ge
 
 '''
 
-def merge_pdfs(pdf_list):
+def merge_pdfs(pdf_list, savepath):
     '''
     Merger all the pdfs in list 
     '''
-    output_path = pdf_list[0].replace(pdf_list[0].split('/')[-1],"merged")+os.path.splitext(pdf_list[0])[1]
-
-    if not os.path.exists(output_path):
+    if not os.path.exists(savepath):
 
         pdf_merger = PdfMerger()
 
@@ -37,9 +35,9 @@ def merge_pdfs(pdf_list):
                 pdf_merger.append(pdf_file)
 
         # Write the merged PDF to the output file
-        print("Mering and Saving {}".format(output_path))
-        with open(output_path, 'wb') as output_file:
-            pdf_merger.write(output_file)
+        print("Mering and Saving {}".format(savepath))
+        with open(savepath, 'wb') as fp:
+            pdf_merger.write(fp)
 
 def refresh_page():
 
@@ -108,7 +106,7 @@ def download(beautiful_perioids, selenimum_periods,period, index):
     if pdf_info[0]=="pdfsimple":#latest single pfds
         pdf_url = url+"modeles/"+pdf_info[1]+"/"+pdf_info[2]+"/"+pdf_info[3]+"/"+language+"/"+ pdf_info[1]+"_"+pdf_info[2]+"_"+pdf_info[3]+"_"+language+".pdf"
         pdf_file = pdf_url.split('/')[-1]
-        savefile = outpath+pdf_file
+        savefile = outpath+ outpath[:-1].replace("pdfs/"+car_brand, "").replace("/", " - ")+os.path.splitext(pdf_url)[-1]
         download_file(pdf_url, savefile)
 
 
@@ -119,10 +117,17 @@ def download(beautiful_perioids, selenimum_periods,period, index):
         soup = BeautifulSoup(driver.page_source, 'html.parser')
  
         image_url = soup.find("div", id="doczone").find('img').attrs['src']
-        
-        img_path = outpath+"FrontCovers/"+ image_url.split('/')[-1]
+
+        out_folder = outpath+"FrontCover/"
+        img_filename = out_folder[:-1].replace("pdfs/"+car_brand, "").replace("/", " - ")+os.path.splitext(image_url)[-1]
+        img_path = out_folder+ img_filename
+        print(img_path)
+
+        img_path_2 = save_dir+car_brand+"FrontCovers/"+img_filename
 
         download_file(url+image_url, img_path)
+        download_file(url+image_url, img_path_2)
+
 
 
         pages = soup.find_all("a", class_="prglinkpdf")
@@ -136,14 +141,16 @@ def download(beautiful_perioids, selenimum_periods,period, index):
 
         pdf_list = []
         for pdf_link in pdf_links:
-            savepath = outpath+pdf_link
+            savepath = outpath+"Individual Pages/"+pdf_link
             source_path = url+"modeles/"+pdf_info[1]+"/"+pdf_info[2]+"/"+pdf_info[3]+"/"+language+"/"+ pdf_link
 
             pdf_list.append(savepath)
 
             download_file(source_path, savepath)
 
-        merge_pdfs(pdf_list)
+        merged_filename  = outpath+ outpath[:-1].replace("pdfs/"+car_brand, "").replace("/", " - ")+".pdf"
+        print("PDF LIST", pdf_list)
+        merge_pdfs(pdf_list, merged_filename)
 
         time.sleep(2)
         refresh_page()
@@ -196,6 +203,7 @@ car_index = 4
 car_hover = car_hovers[car_index]
 
 print(car_hover.text)
+save_dir = "pdfs/"
 outfolder = "pdfs/"+car_brand+car_hover.text+"/"
 
 
